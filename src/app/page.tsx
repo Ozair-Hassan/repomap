@@ -64,7 +64,6 @@ export default function HomePage() {
   } = useAgent()
   const answerRef = useRef<HTMLDivElement>(null)
 
-  // Scroll into view when streaming starts or answer arrives
   useEffect(() => {
     if (streamingAnswer || answer)
       answerRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -91,18 +90,18 @@ export default function HomePage() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-          --bg: #0a0a08;
-          --surface: #111110;
-          --border: #252520;
-          --border-lit: #3a3a30;
-          --amber: #e8a020;
-          --amber-dim: #7a5010;
-          --amber-glow: rgba(232,160,32,0.12);
-          --green: #4adf8a;
-          --red: #f05555;
-          --text: #d4cfc0;
-          --text-dim: #6a6558;
-          --text-bright: #f0ead8;
+          --bg: #181814;
+          --surface: #222220;
+          --border: #38382e;
+          --border-lit: #525244;
+          --amber: #f0aa28;
+          --amber-dim: #9a6818;
+          --amber-glow: rgba(240,170,40,0.14);
+          --green: #5aefaa;
+          --red: #f06868;
+          --text: #e0dbd0;
+          --text-dim: #8a8474;
+          --text-bright: #f8f4e8;
           --font-mono: 'DM Mono', monospace;
           --font-display: 'Syne', sans-serif;
           --radius: 4px;
@@ -136,9 +135,19 @@ export default function HomePage() {
         }
 
         .page {
-          max-width: 860px;
+          width: 75%;
+          max-width: 1400px;
+          min-width: 320px;
           margin: 0 auto;
-          padding: 48px 24px 120px;
+          padding: 48px 0 120px;
+        }
+
+        @media (max-width: 1024px) {
+          .page { width: 88%; }
+        }
+
+        @media (max-width: 640px) {
+          .page { width: 92%; padding: 28px 0 80px; }
         }
 
         /* Header */
@@ -168,7 +177,13 @@ export default function HomePage() {
           margin-top: 10px;
           color: var(--text-dim);
           font-size: 13px;
-          max-width: 480px;
+          max-width: 580px;
+        }
+
+        @media (max-width: 640px) {
+          .header { margin-bottom: 32px; }
+          .header-title { font-size: clamp(28px, 8vw, 40px); }
+          .header-sub { font-size: 12px; max-width: 100%; }
         }
 
         /* Form */
@@ -247,6 +262,16 @@ export default function HomePage() {
           display: flex;
           align-items: center;
           gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 640px) {
+          .submit-row { gap: 8px; }
+          .btn-run { flex: 1; text-align: center; }
+          .btn-reset { flex: 1; text-align: center; }
+          .kbd-hint { display: none; }
+          .hint-pills { gap: 4px; }
+          .hint-pill { font-size: 10px; padding: 3px 8px; }
         }
 
         .btn-run {
@@ -306,10 +331,10 @@ export default function HomePage() {
           border-radius: 50%;
           flex-shrink: 0;
         }
-        .status-dot.running  { background: var(--amber); animation: pulse 1.2s ease-in-out infinite; }
+        .status-dot.running   { background: var(--amber); animation: pulse 1.2s ease-in-out infinite; }
         .status-dot.streaming { background: var(--green); animation: pulse 1.2s ease-in-out infinite; }
-        .status-dot.done     { background: var(--green); }
-        .status-dot.error    { background: var(--red); }
+        .status-dot.done      { background: var(--green); }
+        .status-dot.error     { background: var(--red); }
 
         @keyframes pulse {
           0%, 100% { opacity: 1; }
@@ -350,7 +375,7 @@ export default function HomePage() {
           text-align: left;
           transition: background 0.1s;
         }
-        .step-header:hover { background: #1a1a17; }
+        .step-header:hover { background: #2a2a26; }
 
         .tool-icon { color: var(--amber); flex-shrink: 0; }
         .step-tool { color: var(--amber); font-weight: 500; flex-shrink: 0; }
@@ -360,12 +385,13 @@ export default function HomePage() {
           text-overflow: ellipsis;
           white-space: nowrap;
           flex: 1;
+          min-width: 0;
         }
         .step-chevron { color: var(--text-dim); flex-shrink: 0; font-size: 9px; }
 
         .step-output {
           padding: 12px;
-          background: #0d0d0b;
+          background: #1a1a16;
           border-top: 1px solid var(--border);
           color: var(--text-dim);
           font-size: 12px;
@@ -374,6 +400,12 @@ export default function HomePage() {
           word-break: break-word;
           max-height: 320px;
           overflow-y: auto;
+        }
+
+        @media (max-width: 640px) {
+          .step-tool { font-size: 11px; }
+          .step-args { font-size: 11px; }
+          .status-bar { font-size: 11px; gap: 8px; }
         }
 
         /* Answer */
@@ -423,6 +455,10 @@ export default function HomePage() {
           color: var(--text-dim);
         }
 
+        @media (max-width: 640px) {
+          .answer-box { padding: 16px; font-size: 12px; }
+        }
+
         /* Error */
         .error-box {
           background: rgba(240,85,85,0.06);
@@ -463,7 +499,7 @@ export default function HomePage() {
 
       <div className="page">
         <header className="header">
-          <p className="header-eyebrow">repo intelligence</p>
+          <p className="header-eyebrow">repo map</p>
           <h1 className="header-title">
             Ask your
             <br />
@@ -535,7 +571,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Status bar */}
         {status === 'running' && (
           <div className="status-bar">
             <span className="status-dot running" />
@@ -568,7 +603,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Agent trace */}
         {steps.length > 0 && (
           <section className="steps-section">
             <p className="steps-label">Agent trace</p>
@@ -593,7 +627,6 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* Answer — shown during streaming and after completion */}
         {displayAnswer && (
           <section
             className="answer-section"
