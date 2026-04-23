@@ -17,6 +17,12 @@ export interface FileContent {
   encoding: string
 }
 
+/**
+ * Replace the existing fetchTree function in src/lib/github/client.ts with this.
+ *
+ * Key change: falls back to the Git Trees API when the Contents API
+ * returns 403 (repo too large) or an empty root.
+ */
 export async function fetchTree(
   owner: string,
   repo: string,
@@ -24,6 +30,12 @@ export async function fetchTree(
 ): Promise<TreeItem[]> {
   const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${path}`
   const res = await fetch(url, { headers })
+
+  // Large repos (e.g. vercel/next.js) return 403 on root via Contents API.
+  // Fall back to the Git Trees API for the root listing only.
+  if ((res.status === 403 || res.status === 404) && path === '') {
+    return fetchRootViaTreesApi(owner, repo)
+  }
 
   if (res.status === 404) {
     throw new Error(`Repository or path not found: ${owner}/${repo}/${path}`)
@@ -46,6 +58,39 @@ export async function fetchTree(
     type: item.type === 'dir' ? 'tree' : 'blob',
     sha: item.sha,
   }))
+}
+
+/**
+ * Fallback: fetch the default branch's root tree via the Git Trees API.
+ * Returns only the immediate children (non-recursive), capped at 100 items.
+ */
+async function fetchRootViaTreesApi(
+  owner: string,
+  repo: string,
+): Promise<TreeItem[]> {
+  // First get the default branch SHA
+  const repoRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}`, {
+    headers,
+  })
+  if (!repoRes.ok)
+    throw new Error(`Could not fetch repo metadata: ${repoRes.status}`)
+  const repoData = await repoRes.json()
+  const branch = repoData.default_branch ?? 'main'
+
+  const treeRes = await fetch(
+    `${GITHUB_API_BASE}/repos/${owner}/${repo}/git/trees/${branch}`,
+    { headers },
+  )
+  if (!treeRes.ok) throw new Error(`Git Trees API error: ${treeRes.status}`)
+  const treeData = await treeRes.json()
+
+  return (treeData.tree as any[])
+    .slice(0, 100) // cap — root of next.js has 50+ items, this is plenty
+    .map((item: any) => ({
+      path: item.path,
+      type: item.type === 'tree' ? 'tree' : 'blob',
+      sha: item.sha,
+    }))
 }
 
 export async function fetchFile(
