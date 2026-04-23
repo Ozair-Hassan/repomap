@@ -1,27 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --bg: #181814;
+  --surface: #222220;
+  --border: #38382e;
+  --border-lit: #525244;
+  --amber: #f0aa28;
+  --amber-dim: #9a6818;
+  --amber-glow: rgba(240, 170, 40, 0.14);
+  --green: #5aefaa;
+  --red: #f06868;
+  --text: #e0dbd0;
+  --text-dim: #8a8474;
+  /* Brightness control 
+  --text-bright: #ffffff;  pure white 
+--text-bright: #fffef9;   very slightly warm white 
+--text-bright: #fdfcf5;   subtle warm tint 
+  --text-bright: #f8f4e8; existing
+  */
+  --text-bright: #fdfcf5;
+  --font-mono: 'DM Mono', monospace;
+  --font-display: 'Syne', sans-serif;
+  --radius: 4px;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  /* 
+Base font size
+font-size: 14px;   subtle nudge, good starting point 
+font-size: 15px;   noticeably larger, still tight 
+font-size: 16px;   standard browser default, quite roomy  
+*/
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 100vh;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+input,
+textarea {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  resize: none;
+  width: 100%;
+  border-radius: var(--radius);
+}
+input {
+  padding: 10px 12px 10px 28px;
+}
+textarea {
+  padding: 10px 12px;
+  min-height: 80px;
+}
+input:focus,
+textarea:focus {
+  border-color: var(--amber-dim);
+  box-shadow: 0 0 0 3px var(--amber-glow);
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-dim);
+}
+input:disabled,
+textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
   }
+  50% {
+    opacity: 0.3;
+  }
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header-eyebrow::before {
+  content: '> ';
+  opacity: 0.5;
+}
+
+.anim-pulse {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.anim-blink {
+  animation: blink 0.8s step-end infinite;
+}
+.anim-blink-cursor {
+  animation: blink 0.6s step-end infinite;
+}
+.anim-fade-up {
+  animation: fadeUp 0.3s ease both;
+}
+.anim-fade-up-slow {
+  animation: fadeUp 0.5s ease both;
+}
+.anim-fade-up-delay {
+  animation: fadeUp 0.5s 0.1s ease both;
 }
