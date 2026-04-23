@@ -45,16 +45,30 @@ function Spinner() {
   return <span className="spinner">▋</span>
 }
 
+function Cursor() {
+  return <span className="cursor">▌</span>
+}
+
 export default function HomePage() {
   const [repo, setRepo] = useState('')
   const [goal, setGoal] = useState('')
-  const { status, steps, answer, errorMessage, iterations, ask, reset } =
-    useAgent()
+  const {
+    status,
+    steps,
+    answer,
+    streamingAnswer,
+    errorMessage,
+    iterations,
+    ask,
+    reset,
+  } = useAgent()
   const answerRef = useRef<HTMLDivElement>(null)
 
+  // Scroll into view when streaming starts or answer arrives
   useEffect(() => {
-    if (answer) answerRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [answer])
+    if (streamingAnswer || answer)
+      answerRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [!!streamingAnswer, !!answer]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = () => {
     if (!repo.trim() || !goal.trim() || status === 'running') return
@@ -64,6 +78,10 @@ export default function HomePage() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit()
   }
+
+  const isRunning = status === 'running' || status === 'streaming'
+  const displayAnswer = answer ?? streamingAnswer
+  const showCursor = status === 'streaming'
 
   return (
     <>
@@ -274,23 +292,24 @@ export default function HomePage() {
           display: flex;
           align-items: center;
           gap: 10px;
+          margin-bottom: 20px;
           padding: 8px 12px;
           background: var(--surface);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          margin-bottom: 16px;
           font-size: 12px;
-          animation: fadeUp 0.3s ease both;
         }
+
         .status-dot {
           width: 7px;
           height: 7px;
           border-radius: 50%;
           flex-shrink: 0;
         }
-        .status-dot.running { background: var(--amber); animation: pulse 1s infinite; }
-        .status-dot.done    { background: var(--green); }
-        .status-dot.error   { background: var(--red); }
+        .status-dot.running  { background: var(--amber); animation: pulse 1.2s ease-in-out infinite; }
+        .status-dot.streaming { background: var(--green); animation: pulse 1.2s ease-in-out infinite; }
+        .status-dot.done     { background: var(--green); }
+        .status-dot.error    { background: var(--red); }
 
         @keyframes pulse {
           0%, 100% { opacity: 1; }
@@ -331,7 +350,7 @@ export default function HomePage() {
           text-align: left;
           transition: background 0.1s;
         }
-        .step-header:hover { background: #16161400; }
+        .step-header:hover { background: #1a1a17; }
 
         .tool-icon { color: var(--amber); flex-shrink: 0; }
         .step-tool { color: var(--amber); font-weight: 500; flex-shrink: 0; }
@@ -357,9 +376,6 @@ export default function HomePage() {
           overflow-y: auto;
         }
 
-        /* Live cursor */
-        .step-row.live .step-header { background: rgba(232,160,32,0.05); }
-
         /* Answer */
         .answer-section {
           animation: fadeUp 0.4s ease both;
@@ -382,6 +398,9 @@ export default function HomePage() {
           border-radius: 50%;
           background: var(--green);
         }
+        .answer-label.streaming-label { color: var(--amber); }
+        .answer-label.streaming-label::before { background: var(--amber); }
+
         .answer-box {
           background: var(--surface);
           border: 1px solid var(--border-lit);
@@ -392,6 +411,11 @@ export default function HomePage() {
           font-size: 13px;
           line-height: 1.8;
           white-space: pre-wrap;
+          word-break: break-word;
+        }
+        .answer-box.streaming-box {
+          border-color: var(--amber-dim);
+          box-shadow: 0 0 0 1px var(--amber-glow);
         }
         .answer-meta {
           margin-top: 8px;
@@ -416,6 +440,16 @@ export default function HomePage() {
           color: var(--amber);
           animation: blink 0.8s step-end infinite;
         }
+
+        /* Blinking cursor for token streaming */
+        .cursor {
+          display: inline-block;
+          color: var(--amber);
+          animation: blink 0.6s step-end infinite;
+          margin-left: 1px;
+          line-height: 1;
+        }
+
         @keyframes blink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
@@ -454,7 +488,7 @@ export default function HomePage() {
                 value={repo}
                 onChange={(e) => setRepo(e.target.value)}
                 placeholder="owner/repo or https://github.com/owner/repo"
-                disabled={status === 'running'}
+                disabled={isRunning}
               />
             </div>
           </div>
@@ -465,7 +499,7 @@ export default function HomePage() {
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               placeholder="What would you like to know about this codebase?"
-              disabled={status === 'running'}
+              disabled={isRunning}
             />
             <div className="hint-pills">
               {PLACEHOLDER_GOALS.map((g) => (
@@ -473,7 +507,7 @@ export default function HomePage() {
                   key={g}
                   className="hint-pill"
                   onClick={() => setGoal(g)}
-                  disabled={status === 'running'}
+                  disabled={isRunning}
                 >
                   {g}
                 </button>
@@ -485,9 +519,9 @@ export default function HomePage() {
             <button
               className="btn-run"
               onClick={handleSubmit}
-              disabled={!repo.trim() || !goal.trim() || status === 'running'}
+              disabled={!repo.trim() || !goal.trim() || isRunning}
             >
-              {status === 'running' ? 'Running…' : 'Run Agent →'}
+              {isRunning ? 'Running…' : 'Run Agent →'}
             </button>
             {status !== 'idle' && (
               <button
@@ -501,6 +535,7 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Status bar */}
         {status === 'running' && (
           <div className="status-bar">
             <span className="status-dot running" />
@@ -508,6 +543,17 @@ export default function HomePage() {
             <Spinner />
             <span style={{ color: 'var(--text-dim)', marginLeft: 'auto' }}>
               {steps.length} steps
+            </span>
+          </div>
+        )}
+
+        {status === 'streaming' && (
+          <div className="status-bar">
+            <span className="status-dot streaming" />
+            <span style={{ color: 'var(--green)' }}>Writing answer</span>
+            <Cursor />
+            <span style={{ color: 'var(--text-dim)', marginLeft: 'auto' }}>
+              {steps.length} tool calls
             </span>
           </div>
         )}
@@ -522,10 +568,11 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Agent trace */}
         {steps.length > 0 && (
           <section className="steps-section">
             <p className="steps-label">Agent trace</p>
-            {steps.map((step: any, i: any) => (
+            {steps.map((step: any, i: number) => (
               <StepRow
                 key={i}
                 step={step}
@@ -546,16 +593,26 @@ export default function HomePage() {
           </section>
         )}
 
-        {answer && (
+        {/* Answer — shown during streaming and after completion */}
+        {displayAnswer && (
           <section
             className="answer-section"
             ref={answerRef}
           >
-            <p className="answer-label">Answer</p>
-            <div className="answer-box">{answer}</div>
-            <p className="answer-meta">
-              {iterations} iterations · {steps.length} tool calls
+            <p
+              className={`answer-label${showCursor ? ' streaming-label' : ''}`}
+            >
+              {showCursor ? 'Writing answer' : 'Answer'}
             </p>
+            <div className={`answer-box${showCursor ? ' streaming-box' : ''}`}>
+              {displayAnswer}
+              {showCursor && <Cursor />}
+            </div>
+            {status === 'done' && (
+              <p className="answer-meta">
+                {iterations} iterations · {steps.length} tool calls
+              </p>
+            )}
           </section>
         )}
 

@@ -9,12 +9,13 @@ export interface StepEvent {
   error: boolean
 }
 
-export type AgentStatus = 'idle' | 'running' | 'done' | 'error'
+export type AgentStatus = 'idle' | 'running' | 'streaming' | 'done' | 'error'
 
 export interface UseAgentReturn {
   status: AgentStatus
   steps: StepEvent[]
   answer: string | null
+  streamingAnswer: string
   errorMessage: string | null
   iterations: number
   ask: (goal: string, repo: string) => void
@@ -25,6 +26,7 @@ export function useAgent(): UseAgentReturn {
   const [status, setStatus] = useState<AgentStatus>('idle')
   const [steps, setSteps] = useState<StepEvent[]>([])
   const [answer, setAnswer] = useState<string | null>(null)
+  const [streamingAnswer, setStreamingAnswer] = useState('')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [iterations, setIterations] = useState(0)
   const abortRef = useRef<AbortController | null>(null)
@@ -34,6 +36,7 @@ export function useAgent(): UseAgentReturn {
     setStatus('idle')
     setSteps([])
     setAnswer(null)
+    setStreamingAnswer('')
     setErrorMessage(null)
     setIterations(0)
   }, [])
@@ -46,6 +49,7 @@ export function useAgent(): UseAgentReturn {
     setStatus('running')
     setSteps([])
     setAnswer(null)
+    setStreamingAnswer('')
     setErrorMessage(null)
     setIterations(0)
     ;(async () => {
@@ -84,9 +88,15 @@ export function useAgent(): UseAgentReturn {
 
             if (event === 'step') {
               setSteps((prev) => [...prev, payload as StepEvent])
+            } else if (event === 'token') {
+              // Switch to 'streaming' on the first token so the UI can show
+              // the answer box immediately, before the done event fires.
+              setStatus('streaming')
+              setStreamingAnswer((prev) => prev + payload.chunk)
             } else if (event === 'done') {
               setAnswer(payload.answer)
               setIterations(payload.iterations)
+              setStreamingAnswer('')
               setStatus('done')
             } else if (event === 'error') {
               setErrorMessage(payload.message)
@@ -102,5 +112,14 @@ export function useAgent(): UseAgentReturn {
     })()
   }, [])
 
-  return { status, steps, answer, errorMessage, iterations, ask, reset }
+  return {
+    status,
+    steps,
+    answer,
+    streamingAnswer,
+    errorMessage,
+    iterations,
+    ask,
+    reset,
+  }
 }
