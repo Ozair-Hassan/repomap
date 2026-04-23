@@ -32,7 +32,7 @@ function StepRow({ step, index }: { step: any; index: number }) {
       style={{ animationDelay: `${index * 40}ms` }}
     >
       <button
-        className="flex items-center gap-2 w-full bg-[var(--surface)] border-none text-[var(--text)] font-mono text-xs px-3 py-2 cursor-pointer text-left transition-colors hover:bg-[#2a2a26]"
+        className="flex items-center gap-2 w-full bg-[var(--surface)] border-none text-[var(--text)] font-mono text-[15px] px-3 py-2 cursor-pointer text-left transition-colors hover:bg-[#2a2a26]"
         onClick={() => setExpanded((e) => !e)}
       >
         <ToolIcon name={step.tool} />
@@ -42,12 +42,12 @@ function StepRow({ step, index }: { step: any; index: number }) {
         <span className="text-[var(--text-dim)] overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0">
           {argStr}
         </span>
-        <span className="text-[var(--text-dim)] shrink-0 text-[9px]">
+        <span className="text-[var(--text-dim)] shrink-0 text-[11px]">
           {expanded ? '▲' : '▼'}
         </span>
       </button>
       {expanded && (
-        <pre className="p-3 bg-[#1a1a16] border-t border-[var(--border)] text-[var(--text-dim)] text-xs overflow-x-auto whitespace-pre-wrap break-words max-h-80 overflow-y-auto">
+        <pre className="p-3 bg-[#1a1a16] border-t border-[var(--border)] text-[var(--text-dim)] text-[15px] overflow-x-auto whitespace-pre-wrap break-words max-h-80 overflow-y-auto">
           {step.output}
         </pre>
       )}
@@ -108,7 +108,7 @@ export default function HomePage() {
     >
       {/* Header */}
       <header className="mb-12 anim-fade-up-slow max-[640px]:mb-8">
-        <p className="header-eyebrow font-mono text-[11px] tracking-[0.15em] text-[var(--amber)] uppercase mb-3">
+        <p className="header-eyebrow font-mono text-sm tracking-[0.15em] text-[var(--amber)] uppercase mb-3">
           repo map
         </p>
         <h1
@@ -119,7 +119,7 @@ export default function HomePage() {
           <br />
           <span className="text-[var(--amber)]">codebase</span>
         </h1>
-        <p className="mt-2.5 text-[var(--text-dim)] text-[13px] max-w-[580px] max-[640px]:text-xs max-[640px]:max-w-full">
+        <p className="mt-2.5 text-[var(--text-dim)] text-base max-w-[580px] max-[640px]:text-[15px] max-[640px]:max-w-full">
           Point at any public GitHub repo. Ask anything. Watch the agent explore
           it in real time.
         </p>
@@ -132,11 +132,11 @@ export default function HomePage() {
       >
         {/* Repo field */}
         <div>
-          <p className="text-[11px] tracking-[0.1em] uppercase text-[var(--text-dim)] mb-1.5">
+          <p className="text-sm tracking-[0.1em] uppercase text-[var(--text-dim)] mb-1.5">
             Repository
           </p>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--amber-dim)] pointer-events-none text-[13px]">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--amber-dim)] pointer-events-none text-base">
               ⌥
             </span>
             <input
@@ -151,7 +151,7 @@ export default function HomePage() {
 
         {/* Goal field */}
         <div>
-          <p className="text-[11px] tracking-[0.1em] uppercase text-[var(--text-dim)] mb-1.5">
+          <p className="text-sm tracking-[0.1em] uppercase text-[var(--text-dim)] mb-1.5">
             Question
           </p>
           <textarea
@@ -164,10 +164,10 @@ export default function HomePage() {
             {PLACEHOLDER_GOALS.map((g) => (
               <button
                 key={g}
-                className="bg-transparent border border-[var(--border)] rounded-[20px] text-[var(--text-dim)] font-mono text-[11px] px-2.5 py-[3px] cursor-pointer transition-all duration-150
+                className="bg-transparent border border-[var(--border)] rounded-[20px] text-[var(--text-dim)] font-mono text-sm px-2.5 py-[3px] cursor-pointer transition-all duration-150
                              hover:border-[var(--amber-dim)] hover:text-[var(--amber)] hover:bg-[var(--amber-glow)]
                              disabled:opacity-40 disabled:cursor-not-allowed
-                             max-[640px]:text-[10px] max-[640px]:px-2"
+                             max-[640px]:text-xs max-[640px]:px-2"
                 onClick={() => setGoal(g)}
                 disabled={isRunning}
               >
@@ -180,7 +180,7 @@ export default function HomePage() {
         {/* Submit row */}
         <div className="flex items-center gap-3 flex-wrap max-[640px]:gap-2">
           <button
-            className="border-none rounded-[var(--radius)] text-[#0a0a08] text-[13px] font-[600] tracking-[0.05em] px-6 py-2.5 cursor-pointer transition-all duration-150 whitespace-nowrap
+            className="border-none rounded-[var(--radius)] text-[#0a0a08] text-base font-[600] tracking-[0.05em] px-6 py-2.5 cursor-pointer transition-all duration-150 whitespace-nowrap
                          bg-[var(--amber)] hover:bg-[#f0b030] hover:shadow-[0_0_20px_var(--amber-glow)]
                          disabled:opacity-40 disabled:cursor-not-allowed
                          max-[640px]:flex-1 max-[640px]:text-center"
@@ -193,7 +193,7 @@ export default function HomePage() {
 
           {status !== 'idle' && (
             <button
-              className="bg-transparent border border-[var(--border)] rounded-[var(--radius)] text-[var(--text-dim)] font-mono text-xs px-4 py-2.5 cursor-pointer transition-all duration-150
+              className="bg-transparent border border-[var(--border)] rounded-[var(--radius)] text-[var(--text-dim)] font-mono text-[15px] px-4 py-2.5 cursor-pointer transition-all duration-150
                            hover:border-[var(--border-lit)] hover:text-[var(--text)]
                            max-[640px]:flex-1 max-[640px]:text-center"
               onClick={reset}
@@ -202,7 +202,7 @@ export default function HomePage() {
             </button>
           )}
 
-          <span className="text-[11px] text-[var(--text-dim)] max-[640px]:hidden">
+          <span className="text-sm text-[var(--text-dim)] max-[640px]:hidden">
             or ⌘↵
           </span>
         </div>
@@ -210,7 +210,7 @@ export default function HomePage() {
 
       {/* Status bars */}
       {status === 'running' && (
-        <div className="flex items-center gap-2.5 mb-5 px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius)] text-xs max-[640px]:text-[11px] max-[640px]:gap-2">
+        <div className="flex items-center gap-2.5 mb-5 px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius)] text-[15px] max-[640px]:text-sm max-[640px]:gap-2">
           <span className="w-[7px] h-[7px] rounded-full shrink-0 bg-[var(--amber)] anim-pulse" />
           <span>Agent running</span>
           <Spinner />
@@ -221,7 +221,7 @@ export default function HomePage() {
       )}
 
       {status === 'streaming' && (
-        <div className="flex items-center gap-2.5 mb-5 px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius)] text-xs max-[640px]:text-[11px] max-[640px]:gap-2">
+        <div className="flex items-center gap-2.5 mb-5 px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius)] text-[15px] max-[640px]:text-sm max-[640px]:gap-2">
           <span className="w-[7px] h-[7px] rounded-full shrink-0 bg-[var(--green)] anim-pulse" />
           <span className="text-[var(--green)]">Writing answer</span>
           <Cursor />
@@ -232,7 +232,7 @@ export default function HomePage() {
       )}
 
       {status === 'done' && (
-        <div className="flex items-center gap-2.5 mb-5 px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius)] text-xs max-[640px]:text-[11px] max-[640px]:gap-2">
+        <div className="flex items-center gap-2.5 mb-5 px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius)] text-[15px] max-[640px]:text-sm max-[640px]:gap-2">
           <span className="w-[7px] h-[7px] rounded-full shrink-0 bg-[var(--green)]" />
           <span className="text-[var(--green)]">Complete</span>
           <span className="text-[var(--text-dim)] ml-auto">
@@ -244,7 +244,7 @@ export default function HomePage() {
       {/* Agent trace */}
       {steps.length > 0 && (
         <section className="mb-6">
-          <p className="text-[11px] tracking-[0.1em] uppercase text-[var(--text-dim)] mb-2.5">
+          <p className="text-sm tracking-[0.1em] uppercase text-[var(--text-dim)] mb-2.5">
             Agent trace
           </p>
           {steps.map((step: any, i: number) => (
@@ -255,7 +255,7 @@ export default function HomePage() {
             />
           ))}
           {status === 'running' && (
-            <div className="px-3 py-2 text-[var(--amber)] text-xs">
+            <div className="px-3 py-2 text-[var(--amber)] text-[15px]">
               <Spinner /> thinking…
             </div>
           )}
@@ -269,7 +269,7 @@ export default function HomePage() {
           ref={answerRef}
         >
           <p
-            className={`text-[11px] tracking-[0.1em] uppercase mb-2.5 flex items-center gap-2
+            className={`text-sm tracking-[0.1em] uppercase mb-2.5 flex items-center gap-2
               before:content-[''] before:inline-block before:w-1.5 before:h-1.5 before:rounded-full
               ${
                 showCursor
@@ -280,8 +280,8 @@ export default function HomePage() {
             {showCursor ? 'Writing answer' : 'Answer'}
           </p>
           <div
-            className={`bg-[var(--surface)] rounded-[var(--radius)] px-6 py-5 text-[var(--text-bright)] font-mono text-[13px] leading-[1.8] whitespace-pre-wrap break-words
-                          max-[640px]:px-4 max-[640px]:text-xs
+            className={`bg-[var(--surface)] rounded-[var(--radius)] px-6 py-5 text-[var(--text-bright)] font-mono text-base leading-[1.8] whitespace-pre-wrap break-words
+                          max-[640px]:px-4 max-[640px]:text-[15px]
                           ${
                             showCursor
                               ? 'border border-[var(--amber-dim)] shadow-[0_0_0_1px_var(--amber-glow)]'
@@ -292,7 +292,7 @@ export default function HomePage() {
             {showCursor && <Cursor />}
           </div>
           {status === 'done' && (
-            <p className="mt-2 text-[11px] text-[var(--text-dim)]">
+            <p className="mt-2 text-sm text-[var(--text-dim)]">
               {iterations} iterations · {steps.length} tool calls
             </p>
           )}
@@ -301,7 +301,7 @@ export default function HomePage() {
 
       {/* Error */}
       {errorMessage && (
-        <div className="bg-[rgba(240,85,85,0.06)] border border-[rgba(240,85,85,0.3)] rounded-[var(--radius)] px-4 py-3.5 text-[var(--red)] text-[13px] anim-fade-up">
+        <div className="bg-[rgba(240,85,85,0.06)] border border-[rgba(240,85,85,0.3)] rounded-[var(--radius)] px-4 py-3.5 text-[var(--red)] text-base anim-fade-up">
           ✗ {errorMessage}
         </div>
       )}
