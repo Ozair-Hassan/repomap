@@ -81,16 +81,23 @@ interface ValidationError {
   goal?: string
 }
 
-function validate(repo: string, goal: string): ValidationError {
+function validate(rawRepo: string, goal: string): ValidationError {
   const errors: ValidationError = {}
 
-  if (!repo) {
+  if (!rawRepo) {
     errors.repo = 'Repository is required.'
-  } else if (
-    !/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(repo) &&
-    !repo.startsWith('https://github.com/')
-  ) {
-    errors.repo = 'Must be "owner/repo" or a github.com URL.'
+  } else {
+    // Strip the protocol + host from URLs so we only test the path portion
+    const pathPart = rawRepo.replace(/^https?:\/\/[^/]+/, '')
+    if (/[^a-zA-Z0-9/_.\-]/.test(pathPart)) {
+      // Characters like spaces, semicolons, quotes, etc. are not valid
+      errors.repo = 'Repository contains invalid characters.'
+    } else if (
+      !/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(rawRepo) &&
+      !rawRepo.startsWith('https://github.com/')
+    ) {
+      errors.repo = 'Must be "owner/repo" or a github.com URL.'
+    }
   }
 
   if (!goal) {
@@ -132,14 +139,16 @@ export default function AgentInterface() {
   const handleSubmit = () => {
     if (status === 'running') return
 
-    const cleanRepo = sanitizeRepo(repo)
-    const cleanGoal = sanitizeText(goal)
-
-    const errors = validate(cleanRepo, cleanGoal)
+    // Validate raw values first — this catches illegal chars before sanitise strips them
+    const errors = validate(repo, goal)
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors)
       return
     }
+
+    // Only sanitise after validation passes
+    const cleanRepo = sanitizeRepo(repo)
+    const cleanGoal = sanitizeText(goal)
 
     setValidationErrors({})
     ask(cleanGoal, cleanRepo)
@@ -232,7 +241,6 @@ export default function AgentInterface() {
               }}
               placeholder="What would you like to know about this codebase?"
               disabled={isRunning}
-              maxLength={500}
               className={validationErrors.goal ? '!border-[var(--red)]' : ''}
             />
             {/* Character counter */}
