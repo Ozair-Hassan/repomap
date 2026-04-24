@@ -120,7 +120,11 @@ function forbidden(message: string) {
 // ---------------------------------------------------------------------------
 export async function GET(req: NextRequest) {
   const origin = req.headers.get('origin') ?? ''
-  if (ALLOWED_ORIGINS.length > 0 && !ALLOWED_ORIGINS.includes(origin)) {
+  if (
+    origin &&
+    ALLOWED_ORIGINS.length > 0 &&
+    !ALLOWED_ORIGINS.includes(origin)
+  ) {
     return forbidden('Forbidden')
   }
 
