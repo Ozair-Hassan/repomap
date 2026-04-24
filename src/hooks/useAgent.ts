@@ -54,8 +54,16 @@ export function useAgent(): UseAgentReturn {
     setIterations(0)
     ;(async () => {
       try {
+        // Fetch a fresh CSRF token (sets an HttpOnly cookie) before the main request.
+        await fetch('/api/ask', {
+          method: 'GET',
+          credentials: 'include',
+          signal: controller.signal,
+        })
+
         const res = await fetch('/api/ask', {
           method: 'POST',
+          credentials: 'include', // send the csrf cookie
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ goal, repo }),
           signal: controller.signal,
@@ -89,8 +97,6 @@ export function useAgent(): UseAgentReturn {
             if (event === 'step') {
               setSteps((prev) => [...prev, payload as StepEvent])
             } else if (event === 'token') {
-              // Switch to 'streaming' on the first token so the UI can show
-              // the answer box immediately, before the done event fires.
               setStatus('streaming')
               setStreamingAnswer((prev) => prev + payload.chunk)
             } else if (event === 'done') {
