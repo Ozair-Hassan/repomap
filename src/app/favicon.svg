@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#181814"/>
+
+  <!-- Trunk -->
+  <line x1="256" y1="128" x2="256" y2="384" stroke="#f0aa28" stroke-width="18" stroke-linecap="round"/>
+
+  <!-- Branch left top -->
+  <line x1="256" y1="192" x2="158" y2="256" stroke="#f0aa28" stroke-width="14" stroke-linecap="round"/>
+  <!-- Branch right top -->
+  <line x1="256" y1="192" x2="354" y2="256" stroke="#f0aa28" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Branch left bottom -->
+  <line x1="256" y1="310" x2="158" y2="374" stroke="#9a6818" stroke-width="12" stroke-linecap="round"/>
+  <!-- Branch right bottom -->
+  <line x1="256" y1="310" x2="354" y2="374" stroke="#9a6818" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Nodes -->
+  <circle cx="256" cy="128" r="22" fill="#f0aa28"/>
+  <circle cx="158" cy="256" r="17" fill="#f0aa28"/>
+  <circle cx="354" cy="256" r="17" fill="#f0aa28"/>
+  <circle cx="256" cy="256" r="12" fill="#525244"/>
+  <circle cx="158" cy="374" r="14" fill="#9a6818"/>
+  <circle cx="354" cy="374" r="14" fill="#9a6818"/>
+  <circle cx="256" cy="384" r="14" fill="#9a6818"/>
+</svg>

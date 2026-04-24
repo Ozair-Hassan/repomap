@@ -17,12 +17,6 @@ export interface FileContent {
   encoding: string
 }
 
-/**
- * Replace the existing fetchTree function in src/lib/github/client.ts with this.
- *
- * Key change: falls back to the Git Trees API when the Contents API
- * returns 403 (repo too large) or an empty root.
- */
 export async function fetchTree(
   owner: string,
   repo: string,
@@ -32,7 +26,6 @@ export async function fetchTree(
   const res = await fetch(url, { headers })
 
   // Large repos (e.g. vercel/next.js) return 403 on root via Contents API.
-  // Fall back to the Git Trees API for the root listing only.
   if ((res.status === 403 || res.status === 404) && path === '') {
     return fetchRootViaTreesApi(owner, repo)
   }
@@ -60,10 +53,6 @@ export async function fetchTree(
   }))
 }
 
-/**
- * Fallback: fetch the default branch's root tree via the Git Trees API.
- * Returns only the immediate children (non-recursive), capped at 100 items.
- */
 async function fetchRootViaTreesApi(
   owner: string,
   repo: string,

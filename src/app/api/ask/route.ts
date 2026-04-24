@@ -6,9 +6,7 @@ import type { AgentStep } from '@/lib/agent/types'
 export const runtime = 'nodejs'
 export const maxDuration = 120
 
-// ---------------------------------------------------------------------------
-// Allowed origins — add your production domain here
-// ---------------------------------------------------------------------------
+// Allowed origins
 const ALLOWED_ORIGINS =
   process.env.NODE_ENV === 'production'
     ? (process.env.ALLOWED_ORIGINS ?? '')
@@ -17,10 +15,7 @@ const ALLOWED_ORIGINS =
         .filter(Boolean)
     : ['http://localhost:3000', 'http://localhost:3001']
 
-// ---------------------------------------------------------------------------
 // CSRF token helpers
-// Sign a short-lived token with CSRF_SECRET (add to .env.local / Vercel env vars).
-// ---------------------------------------------------------------------------
 const CSRF_SECRET = process.env.CSRF_SECRET ?? 'dev-secret-change-me'
 const TOKEN_TTL_MS = 5 * 60 * 1000 // 5 minutes
 
@@ -55,9 +50,8 @@ function verifyToken(token: string): boolean {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Rate limiter — 5 requests per minute per IP
-// ---------------------------------------------------------------------------
+
 const RATE_LIMIT_MAX = 5
 const RATE_LIMIT_WINDOW_MS = 60_000
 
@@ -83,9 +77,6 @@ setInterval(() => {
   }
 }, RATE_LIMIT_WINDOW_MS)
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 function parseGitHubUrl(input: string): { owner: string; repo: string } | null {
   const shortMatch = input
     .trim()
@@ -115,9 +106,7 @@ function forbidden(message: string) {
   })
 }
 
-// ---------------------------------------------------------------------------
 // GET /api/ask — issue a CSRF token as an HttpOnly cookie
-// ---------------------------------------------------------------------------
 export async function GET(req: NextRequest) {
   const origin = req.headers.get('origin') ?? ''
   if (
@@ -137,9 +126,7 @@ export async function GET(req: NextRequest) {
   })
 }
 
-// ---------------------------------------------------------------------------
 // POST /api/ask — main agent endpoint
-// ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
   // 1. Origin check
   const origin = req.headers.get('origin') ?? ''

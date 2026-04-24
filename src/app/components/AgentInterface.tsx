@@ -11,10 +11,6 @@ const PLACEHOLDER_GOALS = [
   'Summarise the main dependencies and why they are used.',
 ]
 
-// ---------------------------------------------------------------------------
-// Small presentational helpers
-// ---------------------------------------------------------------------------
-
 function ToolIcon({ name }: { name: string }) {
   if (name === 'list_directory')
     return <span className="tool-icon text-[var(--amber)]">◈</span>
@@ -72,10 +68,6 @@ function Cursor() {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Validation — runs after sanitisation, before the request fires
-// ---------------------------------------------------------------------------
-
 interface ValidationError {
   repo?: string
   goal?: string
@@ -87,10 +79,8 @@ function validate(rawRepo: string, goal: string): ValidationError {
   if (!rawRepo) {
     errors.repo = 'Repository is required.'
   } else {
-    // Strip the protocol + host from URLs so we only test the path portion
     const pathPart = rawRepo.replace(/^https?:\/\/[^/]+/, '')
     if (/[^a-zA-Z0-9/_.\-]/.test(pathPart)) {
-      // Characters like spaces, semicolons, quotes, etc. are not valid
       errors.repo = 'Repository contains invalid characters.'
     } else if (
       !/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(rawRepo) &&
@@ -108,10 +98,6 @@ function validate(rawRepo: string, goal: string): ValidationError {
 
   return errors
 }
-
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
 
 export default function AgentInterface() {
   const [repo, setRepo] = useState('')
@@ -139,14 +125,12 @@ export default function AgentInterface() {
   const handleSubmit = () => {
     if (status === 'running') return
 
-    // Validate raw values first — this catches illegal chars before sanitise strips them
     const errors = validate(repo, goal)
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors)
       return
     }
 
-    // Only sanitise after validation passes
     const cleanRepo = sanitizeRepo(repo)
     const cleanGoal = sanitizeText(goal)
 
@@ -183,8 +167,7 @@ export default function AgentInterface() {
           style={{ fontFamily: 'var(--font-display)' }}
         >
           Ask your
-          <br />
-          <span className="text-[var(--amber)]">codebase</span>
+          <span className="text-[var(--amber)]"> codebase</span>
         </h1>
         <p className="mt-2.5 text-[var(--text-dim)] text-base max-w-[580px] max-[640px]:text-[15px] max-[640px]:max-w-full">
           Point at any public GitHub repo. Ask anything. Watch the agent explore
