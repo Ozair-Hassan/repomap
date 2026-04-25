@@ -33,13 +33,35 @@ function buildToolResultMessage(step: AgentStep): string {
   )
 }
 
+/**
+ * Ask the model to produce the best summary it can given what has been
+ * explored so far.  Used for both maxIterations and deadline exhaustion.
+ */
+async function finishEarly(
+  messages: Message[],
+  reason: 'iterations' | 'deadline',
+): Promise<string> {
+  const prompt =
+    reason === 'deadline'
+      ? 'The time budget for this request is almost exhausted. Call finish NOW with the best answer you can give based on everything you have explored so far. Do not call any more tools.'
+      : 'You have reached the maximum number of steps. Call finish now with the best answer you can give based on what you have explored so far.'
+
+  messages.push({ role: 'user', content: prompt })
+
+  const finalRaw = await chat(messages)
+  const finalCall = parseToolCall(finalRaw)
+  return finalCall.name === 'finish'
+    ? (finalCall.args.answer ?? finalRaw)
+    : finalRaw
+}
+
 export async function runAgent(
   goal: string,
   owner: string,
   repo: string,
   options: AgentOptions = {},
 ): Promise<AgentResult> {
-  const { maxIterations = DEFAULT_MAX_ITERATIONS, onStep } = options
+  const { maxIterations = DEFAULT_MAX_ITERATIONS, deadline, onStep } = options
 
   const systemPrompt = buildSystemPrompt(owner, repo)
   const messages: Message[] = [
@@ -51,6 +73,11 @@ export async function runAgent(
   let iterations = 0
 
   while (iterations < maxIterations) {
+    if (deadline !== undefined && Date.now() >= deadline) {
+      const answer = await finishEarly(messages, 'deadline')
+      return { answer, steps, iterations, timedOut: true }
+    }
+
     iterations++
 
     // Ask the LLM what to do next
@@ -86,16 +113,6 @@ export async function runAgent(
   }
 
   // Hit the iteration limit — ask the model to summarise what it found so far
-  messages.push({
-    role: 'user',
-    content:
-      'You have reached the maximum number of steps. Call finish now with the best answer you can give based on what you have explored so far.',
-  })
-
-  const finalRaw = await chat(messages)
-  const finalCall = parseToolCall(finalRaw)
-  const answer =
-    finalCall.name === 'finish' ? (finalCall.args.answer ?? finalRaw) : finalRaw
-
+  const answer = await finishEarly(messages, 'iterations')
   return { answer, steps, iterations }
 }

@@ -20,9 +20,11 @@ export interface AgentResult {
   answer: string
   steps: AgentStep[]
   iterations: number
+  timedOut?: boolean
 }
 
 export interface AgentOptions {
   maxIterations?: number
+  deadline?: number
   onStep?: (step: AgentStep) => void
 }

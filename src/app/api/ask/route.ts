@@ -6,6 +6,10 @@ import type { AgentStep } from '@/lib/agent/types'
 export const runtime = 'nodejs'
 export const maxDuration = 120
 
+// 95 s leaves ~25 s for the final summarisation Groq call + token streaming,
+const AGENT_DEADLINE_MS = 95_000
+// const AGENT_DEADLINE_MS = 5_0
+
 // Allowed origins
 const ALLOWED_ORIGINS =
   process.env.NODE_ENV === 'production'
@@ -203,6 +207,10 @@ export async function POST(req: NextRequest) {
 
   const { owner, repo } = parsed
 
+  // Deadline passed into the agent so it can finish gracefully before Vercel
+  // kills the function.  Set once here so the clock starts from request time.
+  const deadline = Date.now() + AGENT_DEADLINE_MS
+
   const stream = new ReadableStream({
     async start(controller) {
       const send = (event: string, data: unknown) =>
@@ -213,6 +221,7 @@ export async function POST(req: NextRequest) {
 
         const result = await runAgent(body.goal, owner, repo, {
           maxIterations: body.maxIterations ?? 15,
+          deadline,
           onStep: (step: AgentStep) => {
             send('step', {
               tool: step.toolCall.name,
@@ -223,7 +232,46 @@ export async function POST(req: NextRequest) {
           },
         })
 
-        // Stream the answer token-by-token (word chunks for a natural feel)
+        if (result.timedOut) {
+          if (result.answer && result.answer.trim().length > 0) {
+            // Option 1 — partial answer exists: prepend a caveat and stream it
+            const caveat =
+              '> ⚠️ The analysis hit the time limit and may be incomplete.\n\n'
+            const fullAnswer = caveat + result.answer
+
+            const words = fullAnswer.split(/(\s+)/)
+            for (const chunk of words) {
+              send('token', { chunk })
+              await new Promise((r) => setTimeout(r, 18))
+            }
+
+            send('done', {
+              answer: fullAnswer,
+              iterations: result.iterations,
+              timedOut: true,
+            })
+          } else {
+            // Option 2 — nothing useful to show: send a clean apology
+            const apology =
+              'Sorry, this repository took too long to analyse and the request timed out before a useful answer could be formed. Please try again, or try narrowing your question to a specific file or directory.'
+
+            const words = apology.split(/(\s+)/)
+            for (const chunk of words) {
+              send('token', { chunk })
+              await new Promise((r) => setTimeout(r, 18))
+            }
+
+            send('done', {
+              answer: apology,
+              iterations: result.iterations,
+              timedOut: true,
+            })
+          }
+
+          return
+        }
+
+        // Normal path — stream the answer token-by-token
         const words = result.answer.split(/(\s+)/)
         for (const chunk of words) {
           send('token', { chunk })
